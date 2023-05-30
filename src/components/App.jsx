@@ -5,6 +5,8 @@ import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
 import s from './App.module.css';
 
+
+const CONTACTS_KEY = 'contacts';
 export class App extends Component {
   state = {
     contacts: [
@@ -17,42 +19,54 @@ export class App extends Component {
     name: '',
     number: '',
   };
-
-  addContact = (task) => {
+  componentDidMount(){
+    const parse = JSON.parse(localStorage.getItem(CONTACTS_KEY));
+    if (parse) {
+      this.setState({
+        contacts: parse,
+      })
+    }
+  }
+  
+  componentDidUpdate(_, prevState) {
+    if (prevState.contacts !== this.state.contacts)
+      localStorage.setItem(CONTACTS_KEY, JSON.stringify(this.state.contacts));
+  }
+  addContact = task => {
     const searchSameName = this.state.contacts
-      .map((cont) => cont.name.toLowerCase())
+      .map(cont => cont.name.toLowerCase())
       .includes(task.name.toLowerCase());
 
     if (searchSameName) {
       alert(`${task.name} is already in contacts`);
     } else if (task.name.length === 0) {
-      alert("Fields must be filled!");
+      alert('Fields must be filled!');
     } else {
       const contact = {
         ...task,
         id: nanoid(),
       };
 
-      this.setState((prevState) => ({
+      this.setState(prevState => ({
         contacts: [...prevState.contacts, contact],
       }));
     }
   };
 
-  changeFilter = (filter) => {
+  changeFilter = filter => {
     this.setState({ filter });
   };
 
   getVisibleContacts = () => {
     const { contacts, filter } = this.state;
 
-    return contacts.filter((contacts) =>
+    return contacts.filter(contacts =>
       contacts.name.toLowerCase().includes(filter.toLowerCase())
     );
   };
 
-  removeContact = (contactId) => {
-    this.setState((prevState) => {
+  removeContact = contactId => {
+    this.setState(prevState => {
       return {
         contacts: prevState.contacts.filter(({ id }) => id !== contactId),
       };
